@@ -1,0 +1,137 @@
+<?php
+?>
+    ************* Table membres ***************
+    *****************************************
+
+
+    CREATE TABLE membres (
+      id int(10) NOT NULL auto_increment,
+      pass varchar(60) NOT NULL default '',
+      login varchar(120) NOT NULL default '',
+      PRIMARY KEY  (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+
+    *****************************************
+    *****************************************
+
+
+    <?php
+    // demarre une session
+    session_start();
+
+    // Connection au serveur mySQL
+
+    $db_server = 'localhost'; // Adresse du serveur MySQL
+    $db_name = '';            // Nom de la base de données
+    $db_user_login = 'root';  // Nom de l'utilisateur
+    $db_user_pass = '';       // Mot de passe de l'utilisateur
+
+    // Ouvre une connexion au serveur MySQL
+    $conn = mysqli_connect($db_server,$db_user_login, $db_user_pass, $db_name);
+
+    ?>
+
+    <html>
+    <head>
+    <title>Titre</title>
+    </head>
+    <body>
+    <?php
+
+    // variables du formulaire
+    $action = isset($_POST['action']) ? $_POST['action'] : '';  
+    $email = isset($_POST['email']) ? $_POST['email'] : '';
+    $pass = isset($_POST['pass']) ? $_POST['pass'] : '';
+
+
+    // si le login et pass on été au préalable cryptés 
+    // (en md5 dans l'exemple) dans votre base
+    // vous devez enlever les commentaires sur les 2 lignes suivante
+
+    // $login  = md5($_POST['login']);
+    // $pass   = md5($_POST['pass']);
+
+
+    // Si aucune action, le formulaire est afficher
+    if ($action !=1 ) {
+
+    echo 'Veuillez entrer votre Email et Mot de Passe:<br />';
+    echo '<form action="'.$_SERVER['REQUEST_URI'].'" method="post">';
+    echo '<input type="hidden" name="action" value="1">';
+    echo 'Email: <input type="email" name="email"><br />';
+    echo 'Passe: <input type="password" name="pass"><br />';
+    echo '<input type="submit" value="Connexion">';
+    echo '</form>';
+                      }
+
+    // Sinon
+    if ($action == 1) {
+
+    $q = $conn->query("SELECT *
+                      FROM membres 
+                      WHERE email='$email' 
+                      AND pass='$pass'");
+    $n = $q->num_rows;
+
+        if ($n == 1 AND $login != "" AND $pass != "")
+           {
+           // Le login est placé dans la session
+           $_SESSION['login_session'] = $login;
+           // redirection
+
+            // ATTENTION A BIEN METTRE LA PAGE DE REDIRECTION ICI
+
+           header("location: votre_page_espace_membre.php");
+           }
+
+    // Si le login ou le mot de passe sont incorrect
+    // affiche de nouveau le formulaire
+
+             else{
+
+    echo 'Veuillez entrer votre Email et Mot de Passe:<br />';
+    echo '<form action="'.$_SERVER['REQUEST_URI'].'" method="post">';
+    echo '<input type="hidden" name="action" value="1">';
+    echo 'Email: <input type="email" name="email"><br />';
+    echo 'Passe: <input type="password" name="pass"><br />';
+    echo '<input type="submit" value="Connexion">';
+    echo '</form>';
+
+    die('<font color="red">Informations incorrectes!');
+               }
+             }
+    ?>
+    </body>
+    </html>
+
+
+
+      **************************************************
+      vous pouvez maintenant utiliser la variable de
+      session sur les pages que vous désirez protéger.
+      **************************************************
+
+    //  1ère METHODE
+
+    <?php
+    session_start();
+    // Si la variable $login_session n'est pas déclaré
+    if(!isset($_SESSION["login_session"])) {
+    echo 'Vous n\'avez pas accés à cette page!';
+           }
+    //sinon
+     else {
+     [votre code]
+          }
+    ?>
+
+
+    //  2ème MÉTHODE
+
+
+    <?php
+    session_start();
+    if(!isset($_SESSION['login_session']))
+        die('Accès interdit!');
+    ?>
